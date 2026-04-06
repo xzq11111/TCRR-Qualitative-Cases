@@ -1,108 +1,87 @@
-## 🔍 TCRR: 定性案例研究
-*(匿名材料，供 ICML 2026 提交使用，编号 #14880)*
+# 🔍 TCRR: Qualitative Case Studies
+*(Anonymous Materials for ICML 2026 Submission #14880)*
 
-> 感谢您审阅我们的论文。在下文中，我们提供了全面的视觉案例研究，以清晰地展示**任务条件分辨率路由（TCRR）**如何根据不同文本提示词的语义需求，动态分配分辨率**面积缩放比例**。此机制旨在寻找特征保留与计算效率之间的最佳帕累托平衡，而非单一追求极限压缩。
+Thank you for reviewing our paper. Below we provide comprehensive visual case studies to explicitly demonstrate how **Task-Conditioned Resolution Routing (TCRR)** dynamically assigns resolution area scaling ratios based on the semantic demands of different textual prompts. This mechanism aims to find the optimal Pareto balance between feature retention and computational efficiency, rather than blindly pursuing maximum compression.
 
 ---
 
-### 🌟 类别 1：图像内提示词敏感性（同一图像，不同路由）
+## 🌟 Category 1: Intra-Image Prompt Sensitivity (Same Image, Different Routing)
+This category demonstrates TCRR's core novelty: resolution allocation is dynamically determined by the text prompt, not just the visual complexity of the image itself. 
 
-此类别展示了 TCRR 的核心创新点：分辨率分配由文本提示词动态决定，而不仅仅取决于图像自身的视觉复杂度。为直观展现计算效率的提升，我们在下表中展示了原始分辨率与 TCRR 基于面积动态分配的等效分辨率及其实际视觉输入对比。
-
-#### 🏙️ 案例 1A：4K 城市景观与建筑
-
+### 🏙️ Case 1A: 4K Urban Landscape
 <p align="center">
-  <img src="./assets/case1a_original.jpg" alt="Case 1A Original 4K Image" width="80%">
-  <br>
-  <em>原始分辨率：3840 x 2523</em>
+  <img src="./Case_1A_3840_2523.jpg" alt="Case 1A Original" width="70%">
+  <br><em>Original Resolution: 3840 x 2523</em>
 </p>
 
-| 🎯 任务类型 | 📝 提示词 (Prompt) | ⚙️ TCRR 路由决策 | 🖼️ 模型实际视觉输入 | 💡 效果说明 |
+| 🎯 Task Type | 📝 Prompt | ⚙️ TCRR Routing Decision | 🖼️ Actual Visual Input | 💡 Analysis |
 | :--- | :--- | :--- | :--- | :--- |
-| **全局语义** | *"这张图片是白天还是夜晚拍摄的？"* | **面积缩放比例：10%**<br>*(等效分辨率：约 1214 x 798)* | <img src="./assets/case1a_prompt1_compressed.jpg" width="300" alt="10% 面积缩放图"> | 在减少 **90%** 视觉 Token 的同时，模型依然保留了判断光照条件所需的足够全局特征，正确输出：**“白天”**。此缩放比例为维持高置信度预测的最佳计算平衡点。 |
-| **精细细节** | *"画面中央建筑中下方，那个红色矩形区域内的文字内容是什么？"* | **面积缩放比例：100%**<br>*(保留原始分辨率：3840 x 2523)* | <img src="./assets/case1a_prompt2_uncompressed.jpg" width="300" alt="100% 细节图"> | 模型动态判定该任务需要全像素级精度，因此不做下采样，准确读取出：**“MUZIUM TEKSTIL NEGARA / National Textile Museum”**。 |
+| **Global Semantics** | *"Is this picture taken during the day or at night?"* | **Area Scale: 10%**<br>*(Equivalent Res: ~1214 x 798)* | <img src="./Case_1A_1214_798.jpg" width="300" alt="10% Scale"> | While pruning **90%** of visual tokens, the model retains sufficient global illumination features to correctly output **"Daytime"**. This is the optimal computational sweet spot for high-confidence predictions. |
+| **Fine Details** | *"What is the text inside the red rectangular area on the building in the bottom center?"* | **Area Scale: 100%**<br>*(Original Res: 3840 x 2523)* | <img src="./Case_1A_3840_2523.jpg" width="300" alt="100% Scale"> | The model dynamically determines that pixel-level precision is required. It bypasses down-sampling to accurately read: **"MUZIUM TEKSTIL NEGARA / National Textile Museum"**. |
 
 <br>
 
-#### 📚 案例 1B：2K 室内学习区
-
+### 📚 Case 1B: 2K Indoor Study Area
 <p align="center">
-  <img src="./assets/case1b_original.jpg" alt="Case 1B Original 2K Image" width="80%">
-  <br>
-  <em>原始分辨率：2048 x 2048</em>
+  <img src="./Case_1B_2048_2048.jpg" alt="Case 1B Original" width="60%">
+  <br><em>Original Resolution: 2048 x 2048</em>
 </p>
 
-| 🎯 任务类型 | 📝 提示词 (Prompt) | ⚙️ TCRR 路由决策 | 🖼️ 模型实际视觉输入 | 💡 效果说明 |
+| 🎯 Task Type | 📝 Prompt | ⚙️ TCRR Routing Decision | 🖼️ Actual Visual Input | 💡 Analysis |
 | :--- | :--- | :--- | :--- | :--- |
-| **全局语义** | *"这个房间的功能场景是什么？"* | **面积缩放比例：10%**<br>*(等效分辨率：约 648 x 648)* | <img src="./assets/case1b_prompt1_compressed.jpg" width="300" alt="10% 面积缩放图"> | 在剔除 **90%** 的局部视觉冗余后，模型仍能依靠核心结构特征准确输出：**“计算机实验室或图书馆阅读区”**。 |
-| **精细细节** | *"桌子上摆放的电脑包含哪些品牌？"* | **面积缩放比例：90%**<br>*(等效分辨率：约 1943 x 1943)* | <img src="./assets/case1b_prompt2_compressed.jpg" width="300" alt="90% 面积缩放图"> | 输出：**“Apple 和 Dell”**。由于极低分辨率下远端戴尔显示器背部的标志极易模糊丢失，TCRR 智能地分配了高分辨率以提取微小的多品牌特征。 |
+| **Global Semantics** | *"What is the functional scene of this room?"* | **Area Scale: 10%**<br>*(Equivalent Res: ~648 x 648)* | <img src="./Case_1B_648_648.jpg" width="300" alt="10% Scale"> | After aggressively removing **90%** of local redundancy, the model relies on core structural features to correctly output: **"Computer lab or library reading area"**. |
+| **Fine Details** | *"What brands are the computers on the desk?"* | **Area Scale: 90%**<br>*(Equivalent Res: ~1943 x 1943)* | <img src="./Case_1B_1943_1943.jpg" width="300" alt="90% Scale"> | TCRR intelligently assigns a high resolution to extract micro-features (the tiny logo on the back of the distant Dell monitor would blur entirely at low resolutions). Output: **"Apple and Dell"**. |
 
 ---
 
-### 📊 类别 2：密集信息的高分辨率保留
+## 📊 Category 2: High-Resolution Retention for Dense Information
+For images with dense text or complex structures (e.g., charts, documents), TCRR conservatively maintains high pixel retention rates to prevent the loss of critical fine-grained structures during global compression.
 
-对于包含密集文本或复杂结构的图像（如图表、文档），TCRR 能够智能识别其信息密度，并采取相对保守的路由策略，通过轻微降低全图统一分辨率，维持较高的像素保留率以防止关键文字或细粒度结构在整图压缩过程中丢失。
-
-#### 📉 案例 2A：统计图表问答 (ChartQA)
-
+### 📉 Case 2A: Chart QA (ChartQA)
 <p align="center">
-  <img src="./assets/Case_2A_800_836.jpg" alt="Case 2A Original Chart Image" width="60%">
-  <br>
-  <em>原始分辨率：800 x 836</em>
+  <img src="./Case_2A_800_836.jpg" alt="Case 2A Original" width="50%">
+  <br><em>Original Resolution: 800 x 836</em>
 </p>
 
-| 🎯 任务类型 | 📝 提示词 (Prompt) | ⚙️ TCRR 路由决策 | 🖼️ 模型实际视觉输入 | 💡 效果说明 |
+| 🎯 Task Type | 📝 Prompt | ⚙️ TCRR Routing Decision | 🖼️ Actual Visual Input | 💡 Analysis |
 | :--- | :--- | :--- | :--- | :--- |
-| **信息提取** | *"Which airport was the most used?"* | **面积缩放比例：80%**<br>*(整图等比下采样，等效分辨率：约 716 x 748)* | <img src="./assets/case2a_compressed.jpg" width="300" alt="80% 面积下采样全图"> | 模型智能判定图表包含密集的坐标轴文本与细粒度数据。面对“找出最常使用机场”的指令，TCRR 判定保留整图的清晰文本细节至关重要，因此采取了极其保守的下采样策略，仅轻微降低整图分辨率，确保**全图**所有文本和柱状图细节清晰，准确输出答案：**“Paris-Charles-de-Gaulle”**。 |
+| **Information Extraction** | *"Which airport was the most used?"* | **Area Scale: 80%**<br>*(Equivalent Res: ~716 x 748)* | <img src="./Case_2A_716_748.jpg" width="300" alt="80% Scale"> | Recognizing dense axis texts and fine-grained data bars, TCRR adopts an extremely conservative down-sampling strategy. It marginally reduces resolution to save 20% compute while preserving impeccable legibility, correctly outputting: **"Paris-Charles-de-Gaulle"**. |
 
 <br>
 
-#### 📄 案例 2B：密集文档问答 (DocVQA)
-
+### 📄 Case 2B: Dense Document QA (DocVQA)
 <p align="center">
-  <img src="./assets/Case_2B_1679_2340.jpg" alt="Case 2B Original Document Image" width="60%">
-  <br>
-  <em>原始分辨率：1679 x 2340</em>
+  <img src="./Case_2B_1679_2340.jpg" alt="Case 2B Original" width="50%">
+  <br><em>Original Resolution: 1679 x 2340</em>
 </p>
 
-| 🎯 任务类型 | 📝 提示词 (Prompt) | ⚙️ TCRR 路由决策 | 🖼️ 模型实际视觉输入 | 💡 效果说明 |
+| 🎯 Task Type | 📝 Prompt | ⚙️ TCRR Routing Decision | 🖼️ Actual Visual Input | 💡 Analysis |
 | :--- | :--- | :--- | :--- | :--- |
-| **文档解析** | *"What is the % of raw material imported in the current year?"* | **面积缩放比例：90%**<br>*(整图等比下采样，等效分辨率：约 1593 x 2220)* | <img src="./assets/case2b_compressed.jpg" width="300" alt="90% 面积下采样全图"> | 面对字号极小且结构密集的财务文档，TCRR 判定整个文档中存在大量的微小数字细节。为了确保特定百分比数值（如“本年度进口原材料占比”）的提取准确无误，TCRR 拒绝大幅度下采样，而是分配了最高分辨率，仅轻微降低 10% 的分辨率以剔除微小的计算冗余。这严格保证了表格中的微小数字在传入 ViT 时不会产生任何模糊或 aliasing 问题，模型最终精准提取出数值：**“79.23%”**。 |
+| **Document Parsing** | *"What is the % of raw material imported in the current year?"* | **Area Scale: 90%**<br>*(Equivalent Res: ~1593 x 2220)* | <img src="./Case_2B_1593_2220.jpg" width="300" alt="90% Scale"> | To extract a specific percentage from a financially dense table, TCRR assigns near-maximum resolution (90%). This strictly guarantees that microscopic digits do not suffer from aliasing before entering the ViT, enabling the model to precisely extract: **"79.23%"**. |
 
 ---
 
----
+## ⚡ Category 3: Extreme Redundancy Pruning
+For high-level semantic queries (e.g., mood perception or basic object recognition), fine-grained details are computationally inefficient. TCRR aggressively scales down the entire image (pruning 80%-90% of pixel area) to extract core semantics at ultra-low latency.
 
-## 🌟 类别 3：极致冗余修剪 (Extreme Redundancy Pruning)
-
-对于许多高级语义查询任务（如氛围感知或基本目标识别），高分辨率提供的细粒度细节是过度且低效的。此类案例展示了 TCRR 如何通过积极的路由策略，将整图下采样至极致的低分辨率缩放比例（剔除 80%-90% 的像素面积冗余），从而在极低的计算成本下仍能准确提取核心语义。
-
-#### 🌄 案例 3A：风景景观 (氛围感知)
-*证明整图即使在重度统一像素下采样后，仍能完美保留全局语义和情绪基调。*
-
+### 🌄 Case 3A: Landscape (Mood Perception)
 <p align="center">
-  <img src="./assets/case3a_original.jpg" alt="Case 3A Original Landscape" width="60%">
-  <br>
-  <em>原始分辨率：580 x 381</em>
+  <img src="./Case_3A_580_381.jpg" alt="Case 3A Original" width="50%">
+  <br><em>Original Resolution: 580 x 381</em>
 </p>
 
-| 🎯 任务类型 | 📝 提示词 (Prompt) | ⚙️ TCRR 路由决策 | 🖼️ 模型实际视觉输入 | 💡 效果说明 |
+| 🎯 Task Type | 📝 Prompt | ⚙️ TCRR Routing Decision | 🖼️ Actual Visual Input | 💡 Analysis |
 | :--- | :--- | :--- | :--- | :--- |
-| **氛围感知** | *"这张风景图传达了怎样的总体氛围或情绪？"* | **面积缩放比例：20%**<br>*(整图等比下采样，等效分辨率：约 259 x 170)* | <img src="./assets/case3a_compressed.jpg" width="250" alt="20% 面积下采样全图"> | 预测答案：**“宁静、自然”**。为了识别开放风景的氛围（悬崖、海洋、开阔的天空），像素级的精细纹理（如单片叶子、微小的波纹）对于 LLM 来说是冗余的。TCRR 判定将整图统一缩放到 20% 的极低分辨率即可获取足够的全局特征（蓝天、海洋、悬崖的色块分布和整体轮廓），在极低延迟下给出准确预测。 |
+| **Mood Perception** | *"What is the overall mood or atmosphere conveyed by this landscape?"* | **Area Scale: 20%**<br>*(Equivalent Res: ~259 x 170)* | <img src="./Case_3A_259_170.jpg" width="250" alt="20% Scale"> | Pixel-level textures (individual leaves, tiny ripples) are redundant for mood perception. TCRR aggressively scales the image down to 20% to capture global color blocks and contours, accurately predicting: **"Serene and natural"** at ultra-low latency. |
 
 <br>
 
-#### 🐕 案例 3B：动物识别 (显著主体识别)
-*证明具有标志性特征的主体身份在整图极致下采样下具有很强的鲁棒性。*
-
+### 🐕 Case 3B: Object Recognition (Salient Subject)
 <p align="center">
-  <img src="./assets/case3b_original.jpg" alt="Case 3B Original Animal" width="60%">
-  <br>
-  <em>原始分辨率：680 x 454</em>
+  <img src="./Case_3B_680_454.jpg" alt="Case 3B Original" width="50%">
+  <br><em>Original Resolution: 680 x 454</em>
 </p>
 
-| 🎯 任务类型 | 📝 提示词 (Prompt) | ⚙️ TCRR 路由决策 | 🖼️ 模型实际视觉输入 | 💡 效果说明 |
+| 🎯 Task Type | 📝 Prompt | ⚙️ TCRR Routing Decision | 🖼️ Actual Visual Input | 💡 Analysis |
 | :--- | :--- | :--- | :--- | :--- |
-| **基本识别** | *"图中正中央躺着的主要动物是什么？"* | **面积缩放比例：10%**<br>*(整图等比下采样，等效分辨率：约 215 x 144)* | <img src="./assets/case3b_compressed.jpg" width="250" alt="10% 面积下采样全图"> | 预测答案：**“柴犬”**。柴犬具有标志性的特征：赤金色的毛发、三角形的立耳和特定的轮廓。对于基本的动物类别识别任务，这些**全局特征**即使在整图面积被极致统一压缩到 10% 后依然清晰可辨。TCRR 智能地为该任务分配了最低分辨率路由，最大限度地节省了计算资源，同时完全保持了语义准确性。 |
-
----
+| **Basic Recognition** | *"What is the main animal lying right in the center?"* | **Area Scale: 10%**<br>*(Equivalent Res: ~215 x 144)* | <img src="./Case_3B_215_144.jpg" width="250" alt="10% Scale"> | Iconic global features of a Shiba Inu (reddish-gold coat, triangular ears, silhouette) remain distinctly recognizable even when uniformly compressed to 10% of the original area. TCRR assigns the lowest resolution routing, maximizing efficiency while fully preserving semantic accuracy: **"Shiba Inu"**. |
